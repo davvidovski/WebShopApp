@@ -1,0 +1,45 @@
+name: .NET Core CI - Scheduled Runs
+
+on:
+  schedule:
+    - cron: '0 0 * * 5' # Runs weekly on Friday at midnight UTC
+    - cron: '0 0 28-31 * *' # Runs on the last day of the month
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '8.0'
+
+    - name: Install Google Chrome
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget
+        wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+        sudo apt install -y ./google-chrome-stable_current_amd64.deb
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build
+      run: dotnet build --configuration Release
+
+    - name: Check if today is the last day of the month
+      id: check_last_day
+      run: |
+        if [ "$(date +%d -d tomorrow)" == "01" ]; then
+          echo "is_last_day=true" >> $GITHUB_ENV
+        else
+          echo "is_last_day=false" >> $GITHUB_ENV
+        fi
+
+    - name: Run tests
+      if: env.is_last_day == 'true' || github.event.schedule == '0 0 * * 5'
+      run: dotnet test --configuration Release --no-build --verbosity normal
