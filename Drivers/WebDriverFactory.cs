@@ -11,7 +11,7 @@ namespace WebShop.Drivers
         {
             // Create Chrome options with additional arguments
             var chromeOptions = new ChromeOptions();
-            //chromeOptions.AddArgument("--headless"); // Run in headless mode
+            chromeOptions.AddArgument("--headless"); // Run in headless mode
             chromeOptions.AddArgument("--no-sandbox"); // Required for some CI environments
             chromeOptions.AddArgument("--disable-dev-shm-usage"); // Overcomes limited resource problems
             chromeOptions.AddArgument("--disable-gpu"); // Applicable for older versions of Chrome
